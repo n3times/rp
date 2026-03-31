@@ -1,6 +1,6 @@
 import pygame, random, math, sys
-from pygame.math import Vector2
 from math import sin, cos, atan2
+from pygame.math import Vector2
 
 W, H = 1000, 800
 ALIGN_RADIUS, COH_RADIUS, SEP_RADIUS = 50, 75, 25
@@ -23,7 +23,6 @@ class Boid:
         coh_sum = Vector2()
         sep_sum = Vector2()
         align_count = coh_count = sep_count = 0
-        self.steering = Vector2()
 
         for boid in boids:
             if boid is self: continue
@@ -40,18 +39,19 @@ class Boid:
                 sep_sum -= offset / (dist ** 2)
                 sep_count += 1
 
-        if align_count:
+        self.steering = Vector2()
+        if align_count > 0:
             avg_vel = align_sum / align_count
             if avg_vel.length_squared() > 0:
                 desired = avg_vel.normalize() * MAX_SPEED
                 self.steering += (desired - self.vel) * K_ALIGN
-        if coh_count:
+        if coh_count > 0:
             center = coh_sum / coh_count
             desired = center - self.pos
             if desired.length_squared() > 0:
                 desired = desired.normalize() * MAX_SPEED
                 self.steering += (desired - self.vel) * K_COH
-        if sep_count and sep_sum.length_squared() > 0:
+        if (sep_count > 0) and (sep_sum.length_squared() > 0):
             desired = sep_sum.normalize() * MAX_SPEED
             self.steering += (desired - self.vel) * K_SEP
 
