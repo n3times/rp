@@ -1,6 +1,6 @@
 import pygame, sys
 
-WIDTH, HEIGHT = 800, 600
+W, H = 800, 600
 BG_COLOR, CELL_COLOR = (0, 0, 0), (255, 255, 255)
 DEFAULT_CELL_SIZE, DEFAULT_FPS = 5, 3
 NEIGHBORS = ((-1,-1), (0,-1), (1,-1),
@@ -59,19 +59,20 @@ def evolve_state(live_cells, rule):
 
 def render_state(screen, live_cells, cell_size):
     screen.fill(BG_COLOR)
-    cols, rows = WIDTH // cell_size, HEIGHT // cell_size
-    offset_x, offset_y = cols // 2, rows // 2
+    col_count, row_count = W // cell_size, H // cell_size
+    offset_x, offset_y = col_count // 2, row_count // 2
     gap = 1 if cell_size > 2 else 0
     rect_size = cell_size - gap
     for x, y in live_cells:
         # Center coordinates around (0, 0)
         x, y = x + offset_x, y + offset_y
-        if x < 0 or x >= cols or y < 0 or y >= rows: continue
+        if x < 0 or x >= col_count or y < 0 or y >= row_count:
+            continue
         pygame.draw.rect(screen, CELL_COLOR,
             (x * cell_size, y * cell_size, rect_size, rect_size))
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((W, H))
 clock = pygame.time.Clock()
 
 cell_size, fps = DEFAULT_CELL_SIZE, DEFAULT_FPS
@@ -83,7 +84,6 @@ while True:
         if e.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-
         # Control zoom and speed.
         if e.type == pygame.KEYDOWN:
             if e.key == pygame.K_UP: cell_size += 1
