@@ -4,8 +4,8 @@ from pygame.math import Vector2
 
 W, H = 1000, 800
 ALIGN_RADIUS, COH_RADIUS, SEP_RADIUS = 50, 75, 25
-K_ALIGN, K_COH, K_SEP = 3, 1, 2
-MAX_SPEED = 3
+K_ALIGN, K_COH, K_SEP = 0.3, 0.1, 0.2
+MAX_SPEED = 4
 MAX_FORCE = 0.1
 NUM_BOIDS = 100
 
@@ -36,30 +36,31 @@ class Boid:
                 coh_sum += boid.pos
                 coh_count += 1
             if 0 < dist <= SEP_RADIUS:
-                sep_sum -= offset / (dist ** 2)
+                sep_sum -= offset / dist ** 2
                 sep_count += 1
 
-        self.steering = Vector2()
+        steering = Vector2()
         if align_count > 0:
             avg_vel = align_sum / align_count
             if avg_vel.length_squared() > 0:
                 desired = avg_vel.normalize() * MAX_SPEED
-                self.steering += (desired - self.vel) * K_ALIGN
+                steering += (desired - self.vel) * K_ALIGN
         if coh_count > 0:
             center = coh_sum / coh_count
             desired = center - self.pos
             if desired.length_squared() > 0:
                 desired = desired.normalize() * MAX_SPEED
-                self.steering += (desired - self.vel) * K_COH
+                steering += (desired - self.vel) * K_COH
         if (sep_count > 0) and (sep_sum.length_squared() > 0):
             desired = sep_sum.normalize() * MAX_SPEED
-            self.steering += (desired - self.vel) * K_SEP
+            steering += (desired - self.vel) * K_SEP
+        if steering.length() > MAX_FORCE:
+            steering.scale_to_length(MAX_FORCE)
 
-        if self.steering.length() > MAX_FORCE:
-            self.steering.scale_to_length(MAX_FORCE)
+        return steering
 
-    def update(self):
-        self.vel += self.steering
+    def update(self, steering):
+        self.vel += steering
         if self.vel.length() > MAX_SPEED:
             self.vel.scale_to_length(MAX_SPEED)
         self.pos += self.vel
@@ -85,15 +86,12 @@ while True:
             pygame.quit()
             sys.exit()
 
-    for boid in boids:
-        boid.compute_steering(boids)
-
-    for boid in boids:
-        boid.update()
+    steerings = [boid.compute_steering(boids) for boid in boids]
+    for boid, steering in zip(boids, steerings):
+        boid.update(steering)
 
     screen.fill((0, 0, 0))
     for boid in boids:
         boid.draw(screen)
-   
     pygame.display.flip() 
     clock.tick(60)
