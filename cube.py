@@ -1,11 +1,11 @@
 import sys, time
 from math import cos, sin
 
-WIDTH, HEIGHT = 65, 35          # Size of terminal "screen"
-COLORS = ".=@$-*"               # Characters used to draw faces
-N = 20                          # Resolution of each cube face
+W, H = 65, 35
+COLORS = ".=@$-*"  # Characters used to draw faces
+N = 20             # Each face has (2N + 1)**2 points
 
-# ANSI escape codes for smoother animation
+# ANSI escape characters
 CLEAR_SCREEN = "\x1b[2J"
 CURSOR_HOME = "\x1b[H"
 
@@ -23,7 +23,6 @@ class Rotation:
         )
 
     def apply(self, x, y, z):
-        # Apply rotation matrix to a 3D point
         m = self.matrix
         return (
             m[0][0]*x + m[0][1]*y + m[0][2]*z,
@@ -33,8 +32,8 @@ class Rotation:
 
 class Face:
     def __init__(self, center, index):
-        self.center = center      # Center of the face
-        self.index = index        # Used to pick a character
+        self.center = center
+        self.color = COLORS[index]
 
         x, y, z = center
 
@@ -46,7 +45,7 @@ class Face:
 
         # Generate grid of points across the face
         self.points = [
-            ((x + i / N, y + j / N, z + k / N), index)
+            ((x + i / N, y + j / N, z + k / N), self.color)
             for i in range_x for j in range_y for k in range_z
         ]
 
@@ -54,24 +53,23 @@ class Face:
         _, _, z = rotation.apply(*self.center)
         return z > 0
 
-def create_cube_faces():
+def create_cube():
     left, right = Face((-1,0,0), 0), Face((1,0,0), 1)
     down, up = Face((0,-1,0), 2), Face((0,1,0), 3)
     back, front = Face((0,0,-1), 4), Face((0,0,1), 5)
     return (left, right, down, up, back, front)
 
 def render_cube(canvas, cube, rotation):
-    # Draw visible faces onto the canvas
     for face in cube:
         if not face.is_facing_viewer(rotation): continue
-        for (x, y, z), index in face.points:
+        for (x, y, z), color in face.points:
             rot_x, rot_y, _ = rotation.apply(x, y, z)
-            screen_x = round(WIDTH / 2 + rot_x * WIDTH / 4)
-            screen_y = round(HEIGHT / 2 + rot_y * HEIGHT / 4)
-            if 0 <= screen_x < WIDTH and 0 <= screen_y < HEIGHT:
-                canvas[screen_y][screen_x] = COLORS[index]
+            screen_x = round(W / 2 + rot_x * W / 4)
+            screen_y = round(H / 2 + rot_y * H / 4)
+            if 0 <= screen_x < W and 0 <= screen_y < H:
+                canvas[screen_y][screen_x] = color
 
-cube = create_cube_faces()
+cube = create_cube()
 angle = 0
 
 try:
@@ -81,9 +79,7 @@ try:
     while True:
         rotation = Rotation(angle*0.7, angle*0.4, angle*1.1)
 
-        canvas = [
-            [" " for i in range(WIDTH)] for j in range(HEIGHT)
-        ]
+        canvas = [[" " for i in range(W)] for j in range(H)]
         render_cube(canvas, cube, rotation)
 
         frame = "\n".join("".join(row) for row in canvas)
@@ -92,7 +88,7 @@ try:
         sys.stdout.write(CURSOR_HOME)
         sys.stdout.flush()
 
-        angle += 0.05          # Increase rotation angle
-        time.sleep(0.03)       # Control animation speed
+        angle += 0.05
+        time.sleep(0.03)
 except KeyboardInterrupt:
     pass
