@@ -1,18 +1,18 @@
 import pygame, random, sys
 
 W, H = 800, 600
-DEPTH = 1000
+MAX_DEPTH = 1000
 BG, FG = (0, 0, 0), (255, 255, 255)
 
 MAX_STAR_SIZE = 4
-STAR_SPEED = 30
-NUM_STARS = 250
+STAR_SPEED = 20
+NUM_STARS = 500
 
 class Star:
     def __init__(self):
         self.x = random.uniform(-W, W)
         self.y = random.uniform(-H, H)
-        self.z = random.uniform(1, DEPTH)
+        self.z = random.uniform(1, MAX_DEPTH)
 
     def update(self):
         self.z -= STAR_SPEED  # Move forward
@@ -21,7 +21,7 @@ class Star:
         if self.z < 1:
             self.x = random.uniform(-W, W)
             self.y = random.uniform(-H, H)
-            self.z = DEPTH
+            self.z = MAX_DEPTH
 
     def render(self, screen):
         sx, sy = to_screen(self.x, self.y, self.z)
@@ -30,11 +30,11 @@ class Star:
         previous_z = self.z + STAR_SPEED
         px, py = to_screen(self.x, self.y, previous_z)
  
-        # Closer stars are bigger 
-        size = 1 + round((1 - self.z / DEPTH) * MAX_STAR_SIZE)
+        # Closer stars look bigger
+        size = round((1 - self.z / MAX_DEPTH) * MAX_STAR_SIZE)
         
         if 0 <= sx < W and 0 <= sy < H:
-            pygame.draw.line(screen, FG, (px, py), (sx, sy), size)
+            pygame.draw.line(screen, FG, (px,py), (sx,sy), size)
 
 def to_screen(x, y, z):
     # Simple perspective projection: closer objects appear
