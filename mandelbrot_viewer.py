@@ -1,6 +1,6 @@
 import pygame, sys
 
-W, H = 600, 600
+W, H = 800, 600
 HALF_W, HALF_H = W // 2, H // 2
 
 INITIAL_CENTER = -0.5 + 0j
@@ -26,6 +26,7 @@ def color_for_iter(num_iter, max_iter):
     return (val, val, val)
 
 def render_pixel(surface, row, col, center, zoom, max_iter):
+    if not(0 <= row < H and 0 <= col < W): return
     c = pixel_to_complex((col, row), center, zoom)
     num_iter = escape_time(c, max_iter)
     surface.set_at((col, row), color_for_iter(num_iter, max_iter))
@@ -52,6 +53,8 @@ while True:
         if e.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+
+        # Control zoom, panning, iterations, and reset
         if e.type == pygame.MOUSEBUTTONDOWN:
             center = pixel_to_complex(e.pos, center, zoom)
             if e.button == 3:  # right click
@@ -60,12 +63,10 @@ while True:
                 zoom *= 2
             next_ring = 0
         if e.type != pygame.KEYDOWN: continue
-        # Use brackets to change the "resolution" (max_iter)
         if e.key == pygame.K_LEFTBRACKET:
             max_iter = max(1, max_iter // 2)
         elif e.key == pygame.K_RIGHTBRACKET:
             max_iter *= 2
-        # Use arrows to pan half a screen in one direction
         elif e.key == pygame.K_LEFT:
             center = pixel_to_complex((0, HALF_H), center, zoom)
         elif e.key == pygame.K_RIGHT:
@@ -74,7 +75,6 @@ while True:
             center = pixel_to_complex((HALF_W, H), center, zoom)
         elif e.key == pygame.K_UP:
             center = pixel_to_complex((HALF_W, 0), center, zoom)
-        # Use "R" to reset
         elif e.key == pygame.K_r:
             center, zoom, max_iter, next_ring = reset_view()
         next_ring = 0
@@ -83,14 +83,13 @@ while True:
     if next_ring == 0:
         screen.fill((255, 255, 255))
         pygame.display.set_caption(
-            f"Zoom {zoom:,} -- Iters {max_iter:,}"
-        )
+            f"Zoom {zoom:,} -- Iters {max_iter:,}")
 
     # Draw a few rings at a time
     if next_ring <= max(W, H) // 2:
         for radius in range(next_ring, next_ring + 3):
             render_ring(screen, radius, center, zoom, max_iter)
-        next_ring += 3
+            next_ring += 1
 
     pygame.display.flip()
     clock.tick(60)
