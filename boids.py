@@ -18,6 +18,7 @@ class Boid:
         vx, vy = speed * cos(theta), speed * sin(theta)
         self.vel = Vector2(vx, vy)
 
+    # Applies Reynolds' rules: alignment, cohesion, separation
     def compute_steering(self, boids):
         align_sum = Vector2()
         coh_sum = Vector2()
@@ -68,6 +69,7 @@ class Boid:
         self.pos.x %= W 
         self.pos.y %= H
 
+    # Draws boid as a triangle
     def draw(self, screen):
         a = atan2(self.vel.y, self.vel.x)
         tip = self.pos + Vector2(cos(a), sin(a)) * 10
