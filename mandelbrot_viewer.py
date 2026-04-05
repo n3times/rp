@@ -1,7 +1,6 @@
 import pygame, sys
 
 W, H = 800, 600
-HALF_W, HALF_H = W // 2, H // 2
 
 INITIAL_CENTER = -0.5 + 0j
 INITIAL_ZOOM = 1
@@ -17,7 +16,7 @@ def mandelbrot_iters(c, max_iter):
 
 def pixel_to_complex(pixel, center, zoom):
     x, y = pixel
-    dx, dy = x - HALF_W, HALF_H - y
+    dx, dy = x - W//2, H//2 - y
     scale = RANGE_X_FOR_ZOOM_1 / W / zoom
     return center + complex(dx * scale, dy * scale)
 
@@ -33,11 +32,11 @@ def draw_pixel(surface, x, y, center, zoom, max_iter):
     surface.set_at((x, y), color_for_iter(iters, max_iter))
 
 def draw_ring(surface, ring, center, zoom, max_iter):
-    for y in (HALF_H - ring, HALF_H + ring):
-        for x in range(HALF_W - ring, HALF_W + ring + 1): 
+    for y in (H//2 - ring, H//2 + ring):
+        for x in range(W//2 - ring, W//2 + ring + 1): 
             draw_pixel(surface, x, y, center, zoom, max_iter)
-    for y in range(HALF_H - ring, HALF_H + ring):
-        for x in (HALF_W - ring, HALF_W + ring): 
+    for y in range(H//2 - ring, H//2 + ring):
+        for x in (W//2 - ring, W//2 + ring): 
             draw_pixel(surface, x, y, center, zoom, max_iter)
 
 def reset_view():
@@ -58,7 +57,7 @@ while True:
         # Control zoom, panning, iterations, and reset
         if e.type == pygame.MOUSEBUTTONDOWN:
             center = pixel_to_complex(e.pos, center, zoom)
-            if e.button == 3:  # right click
+            if e.button == pygame.BUTTON_RIGHT:
                 zoom = max(1, zoom // 2)
             else:
                 zoom *= 2
