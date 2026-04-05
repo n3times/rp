@@ -26,19 +26,19 @@ def color_for_iter(iters, max_iter):
     val = 128 + int(128 * iters / max_iter)
     return (val, val, val)
 
-def render_pixel(surface, row, col, center, zoom, max_iter):
-    if not(0 <= row < H and 0 <= col < W): return
-    c = pixel_to_complex((col, row), center, zoom)
+def draw_pixel(surface, x, y, center, zoom, max_iter):
+    if not(0 <= x < W and 0 <= y < H): return
+    c = pixel_to_complex((x, y), center, zoom)
     iters = mandelbrot_iters(c, max_iter)
-    surface.set_at((col, row), color_for_iter(iters, max_iter))
+    surface.set_at((x, y), color_for_iter(iters, max_iter))
 
-def render_ring(surface, ring, center, zoom, max_iter):
-    for j in (HALF_H - ring, HALF_H + ring):
-        for i in range(HALF_W - ring, HALF_W + ring + 1): 
-            render_pixel(surface, j, i, center, zoom, max_iter)
-    for j in range(HALF_H - ring, HALF_H + ring):
-        for i in (HALF_W - ring, HALF_W + ring): 
-            render_pixel(surface, j, i, center, zoom, max_iter)
+def draw_ring(surface, ring, center, zoom, max_iter):
+    for y in (HALF_H - ring, HALF_H + ring):
+        for x in range(HALF_W - ring, HALF_W + ring + 1): 
+            draw_pixel(surface, x, y, center, zoom, max_iter)
+    for y in range(HALF_H - ring, HALF_H + ring):
+        for x in (HALF_W - ring, HALF_W + ring): 
+            draw_pixel(surface, x, y, center, zoom, max_iter)
 
 def reset_view():
     return INITIAL_CENTER, INITIAL_ZOOM, INITIAL_MAX_ITER, 0
@@ -90,7 +90,7 @@ while True:
     # Draw a few rings at a time
     if next_ring <= max(W, H) // 2:
         for _ in range(3):
-            render_ring(screen, next_ring, center, zoom, max_iter)
+            draw_ring(screen, next_ring, center, zoom, max_iter)
             next_ring += 1
 
     pygame.display.flip()
