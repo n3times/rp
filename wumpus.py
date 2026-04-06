@@ -12,7 +12,8 @@ NEIGHBORS = {
 WUMPUS_MOVE_PROBABILITY = 0.75
 
 def describe(player, wumpus, bats, pits, arrows):
-    if wumpus in NEIGHBORS[player]: print("I smell a Wumpus...")
+    if wumpus in NEIGHBORS[player]:
+        print("I smell a Wumpus...")
     if any(bat in NEIGHBORS[player] for bat in bats):
         print("Bats nearby...")
     if any(pit in NEIGHBORS[player] for pit in pits):
@@ -33,19 +34,15 @@ def check_death(player, wumpus, pits):
 
 def handle_command(player):
     while True:
-        parts = input("> ").lower().split()
-        if len(parts) != 2:
-            print("Use: m <room> or s <room>")
-            continue
-        if parts[0][0] not in "ms" or not parts[1].isdigit():
-            print("Use: m <room> or s <room>")
-            continue
+        c = input("> ").lower().split()
+        if len(c) == 2 and c[0] in {"m", "s"} and c[1].isdigit():
+            action, room = c[0][0], int(c[1])
+            if room not in NEIGHBORS[player]:
+                print(f"Not connected to room {room}")
+                continue
+            break
+        print("Use: m <room> or s <room>")
 
-        action, room = parts[0][0], int(parts[1])
-        if room not in NEIGHBORS[player]:
-            print("Not connected.")
-            continue
-        break
     return action, room
 
 arrows = STARTING_ARROWS
@@ -68,7 +65,7 @@ while True:
         if arrows == 0:
             print("OUT OF ARROWS!")
             break
-        if random.random() < WUMPUS_MOVE_PROBABILITY:
+        if random.random() <= WUMPUS_MOVE_PROBABILITY:
             wumpus = random.choice(NEIGHBORS[wumpus])
             if wumpus == player:
                 print("Wumpus moved to your room!")
@@ -83,6 +80,6 @@ while True:
     if player in bats:
         while player in bats:
             player = random.randint(1, NUM_ROOMS)
-        print("Bats lift you to another room...")
+        print(f"Bats lift you to another room {player}")
         if check_death(player, wumpus, pits):
             break
