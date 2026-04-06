@@ -32,11 +32,11 @@ def check_death(player, wumpus, pits):
         return True
     return False
 
-def handle_command(player):
+def read_command(player):
     while True:
         c = input("> ").lower().split()
         if len(c) == 2 and c[0] in {"m", "s"} and c[1].isdigit():
-            action, room = c[0][0], int(c[1])
+            action, room = c[0], int(c[1])
             if room not in NEIGHBORS[player]:
                 print(f"Not connected to room {room}")
                 continue
@@ -48,13 +48,13 @@ def handle_command(player):
 arrows = STARTING_ARROWS
 starting_rooms = random.sample(range(1, NUM_ROOMS + 1), 6)
 player, wumpus, bat1, bat2, pit1, pit2 = starting_rooms
-bats = (bat1, bat2)
-pits = (pit1, pit2)
+bats = {bat1, bat2}
+pits = {pit1, pit2}
 
 while True:
     describe(player, wumpus, bats, pits, arrows)
 
-    action, room = handle_command(player)
+    action, room = read_command(player)
 
     if action == "s":          # Shoot arrow
         if room == wumpus:
@@ -73,13 +73,12 @@ while True:
                 break
     else:                       # Move to new room
         player = room
-
-    if check_death(player, wumpus, pits):
-        break
-
-    if player in bats:
-        while player in bats:
-            player = random.randint(1, NUM_ROOMS)
-        print(f"Bats lift you to another room {player}")
         if check_death(player, wumpus, pits):
             break
+        if player in bats:
+            while player in bats:
+                player = random.randint(1, NUM_ROOMS)
+            print(f"Bats lift you to room {player}")
+            # Bats may bring you to the Wumpus or a pit!
+            if check_death(player, wumpus, pits):
+                break
